@@ -69,7 +69,7 @@ vim.keymap.set('n', '<leader>fB', '<cmd>VifmBuffer<cr>',
 
 vim.keymap.set('n', '<leader>fb', '<cmd>VifmCwd<cr>',
   { desc = 'Vifm: cwd' })
-
+```
 ---
 
 ## 🚀 Uso
