@@ -8,6 +8,11 @@ local config = {
   vifmrc      = nil,
   small_cols  = 100,
   small_lines = 30,
+
+  -- Color del borde del float. fzf usa por defecto un gris oscuro neutro.
+  -- Ajustá a gusto: probá '#3a3a3a', '#4d4d4d', '#5c6370', '#7f849c'
+  border_color = '#abb2bf',   -- gris claro (One Dark típico)
+  border_cterm = 7,           -- blanco (o 15 para blanco brillante)
   window = {
     width        = 1.0,
     height       = 0.46,
@@ -17,7 +22,6 @@ local config = {
     style        = 'minimal',
   },
 }
-
 -- ─── Helpers ────────────────────────────────────────────────
 
 local function is_open()
@@ -91,10 +95,17 @@ local function sync_bg()
 end
 
 local function setup_hl()
-  vim.api.nvim_set_hl(0, 'VifmFloatBorder', { ctermfg = 8, ctermbg = 'NONE', fg = '#5c6370', bg = 'NONE' })
-  vim.api.nvim_set_hl(0, 'VifmFloatNormal', { ctermfg = 'NONE', ctermbg = 'NONE', fg = 'NONE', bg = 'NONE' })
+  vim.api.nvim_set_hl(0, 'VifmFloatBorder', {
+    fg      = config.border_color,
+    ctermfg = config.border_cterm,
+    bg      = 'NONE',
+    ctermbg = 'NONE',
+  })
+  vim.api.nvim_set_hl(0, 'VifmFloatNormal', {
+    fg = 'NONE', ctermfg = 'NONE',
+    bg = 'NONE', ctermbg = 'NONE',
+  })
 end
-
 -- ─── API ────────────────────────────────────────────────────
 
 function M.close()
