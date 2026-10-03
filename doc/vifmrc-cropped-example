@@ -97,12 +97,14 @@ nnoremap <space><space> <C-W><C-W>
 
 " Layouts
 nnoremap <silent> ww :if layoutis('only') || layoutis('hsplit')
+      \ | execute 'windo set quickview'
       \ | execute 'vsplit'
       \ | else
       \ | execute 'only'
       \ | endif<cr>
 
 nnoremap <silent> ws :if layoutis('only') || layoutis('vsplit')
+      \ | execute 'windo set quickview'
       \ | execute 'split'
       \ | else
       \ | execute 'only'
