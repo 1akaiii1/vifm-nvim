@@ -9,7 +9,6 @@ local config = {
   small_cols  = 100,
   small_lines = 30,
 
-  -- Color del borde del float. fzf usa por defecto un gris oscuro neutro.
   -- Ajustá a gusto: probá '#3a3a3a', '#4d4d4d', '#5c6370', '#7f849c'
   border_color = '#abb2bf',   -- gris claro (One Dark típico)
   border_cterm = 7,           -- blanco (o 15 para blanco brillante)
