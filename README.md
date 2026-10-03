@@ -107,6 +107,8 @@ require('vifm-nvim').setup({
   small_lines = 30,
 
   -- Geometría del float
+  border_color = '#abb2bf',   -- gris claro (One Dark típico)
+  border_cterm = 7,           -- blanco (o 15 para blanco brillante)
   window = {
     width        = 1.0,       -- 100% del ancho
     height       = 0.50,      -- 50% del alto
@@ -213,11 +215,11 @@ vifm.close()
 
 ### El borde del float se ve distinto que el de fzf
 
-El plugin define `VifmFloatBorder` con `ctermfg=8` (gris ANSI). Si tu paleta mapea el color 8 a otro tono, ajustalo en tu config:
+El plugin define `VifmFloatBorder` con `ctermfg=7` (blanco ANSI). Si tu paleta mapea el color 7 a otro tono, ajustalo en tu config:
 
 ```lua
 vim.api.nvim_set_hl(0, 'VifmFloatBorder', {
-  ctermfg = 8,     -- probá 0, 7, 8, 15
+  ctermfg = 7,     -- probá 0, 7, 8, 15
   bg      = 'NONE',
 })
 ```
