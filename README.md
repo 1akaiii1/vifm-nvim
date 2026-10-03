@@ -111,9 +111,9 @@ require('vifm-nvim').setup({
   border_cterm = 7,           -- blanco (o 15 para blanco brillante)
   window = {
     width        = 1.0,       -- 100% del ancho
-    height       = 0.50,      -- 50% del alto
-    height_small = 0.75,      -- 75% en pantallas chicas
-    bottom_gap   = 1,         -- líneas libres entre float y cmdline
+    height       = 0.46,      -- 50% del alto
+    height_small = 1.0,      -- 75% en pantallas chicas
+    bottom_gap   = 4,         -- líneas libres entre float y cmdline
     border       = 'rounded',
     style        = 'minimal',
   },
@@ -145,8 +145,8 @@ Cada valor numérico de geometría acepta:
 
 Config y datos viven en `base_dir`. No toca tu vifm del sistema.
 - `base_dir= ~/.local/share/nvim/vifm-nvim/cache/`
-          `~/.local/share/nvim/vifm-nvim/config/`
-        `  ~/.local/share/nvim/vifm-nvim/data/`
+-           `~/.local/share/nvim/vifm-nvim/config/`
+-           `~/.local/share/nvim/vifm-nvim/data/`
                                     
 ```lua
 require('vifm-nvim').setup()   -- vifmrc = nil
