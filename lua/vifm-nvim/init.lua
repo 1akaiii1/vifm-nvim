@@ -9,18 +9,21 @@ local config = {
   small_cols  = 100,
   small_lines = 30,
 
-  -- Ajustá a gusto: probá '#3a3a3a', '#4d4d4d', '#5c6370', '#7f849c'
-  border_color = '#abb2bf',   -- gris claro (One Dark típico)
-  border_cterm = 7,           -- blanco (o 15 para blanco brillante)
+  -- Color del borde del float.
+  border_color = '#faf8f6',
+  border_cterm = 7,
+
   window = {
     width        = 1.0,
-    height       = 0.46,
-    height_small = 1.0,
-    bottom_gap   = 4,
+    height       = 0.50,
+    height_small = 0.75,
+    bottom_gap   = 1,
     border       = 'rounded',
     style        = 'minimal',
+    -- border_color y border_cterm también se aceptan acá (ver setup)
   },
 }
+
 -- ─── Helpers ────────────────────────────────────────────────
 
 local function is_open()
@@ -50,6 +53,7 @@ local function ensure_vifmrc()
 
   if content == nil then
     content = table.concat({
+      '" vifm-nvim',
       'nnoremap w :view<cr>',
       'qnoremap w :view<cr>',
       'set vicmd=nvim',
@@ -87,24 +91,29 @@ local function geometry()
 end
 
 local function sync_bg()
-  local n = vim.api.nvim_get_hl(0, { name = 'Normal' })
-  if n and n.bg then
+  local ok, n = pcall(vim.api.nvim_get_hl, 0, { name = 'Normal' })
+  if ok and n and n.bg then
     vim.g.terminal_color_background = string.format('#%06x', n.bg)
   end
 end
 
-local function setup_hl()
+local function apply_hl()
   vim.api.nvim_set_hl(0, 'VifmFloatBorder', {
     fg      = config.border_color,
     ctermfg = config.border_cterm,
     bg      = 'NONE',
     ctermbg = 'NONE',
+    default = false,
   })
   vim.api.nvim_set_hl(0, 'VifmFloatNormal', {
     fg = 'NONE', ctermfg = 'NONE',
     bg = 'NONE', ctermbg = 'NONE',
+    default = false,
   })
 end
+
+M.reload_hl = apply_hl
+
 -- ─── API ────────────────────────────────────────────────────
 
 function M.close()
@@ -153,16 +162,15 @@ function M.toggle(opts)
     return
   end
 
-  -- vifmrc = false  → NO aislar: usar la config del sistema (~/.config/vifm/)
   local isolate = config.vifmrc ~= false
-
   if isolate then
     ensure_dirs()
     ensure_vifmrc()
   end
 
+  -- Reaplicar colores justo antes de abrir el float
   sync_bg()
-  setup_hl()
+  apply_hl()
 
   local start_dir = opts.start_dir
   if not start_dir then
@@ -224,10 +232,22 @@ function M.setup(opts)
   if opts.small_cols  then config.small_cols  = opts.small_cols  end
   if opts.small_lines then config.small_lines = opts.small_lines end
   if opts.vifmrc ~= nil then config.vifmrc    = opts.vifmrc      end
-  if opts.window  then
+
+  -- Aceptar border_color / border_cterm en la raíz...
+  if opts.border_color then config.border_color = opts.border_color end
+  if opts.border_cterm then config.border_cterm = opts.border_cterm end
+
+  -- ...o dentro de window (más intuitivo junto a border)
+  if opts.window then
     config.window = vim.tbl_deep_extend('force', config.window, opts.window)
+    if opts.window.border_color then config.border_color = opts.window.border_color end
+    if opts.window.border_cterm then config.border_cterm = opts.window.border_cterm end
   end
 
+  -- Aplicar ahora (por si no abrís el float todavía, quede listo)
+  apply_hl()
+
+  -- Comandos de usuario
   vim.api.nvim_create_user_command('VifmBuffer', function()
     local f = vim.api.nvim_buf_get_name(0)
     local d = f ~= '' and vim.fn.fnamemodify(f, ':p:h') or vim.fn.getcwd()
@@ -237,6 +257,12 @@ function M.setup(opts)
   vim.api.nvim_create_user_command('VifmCwd', function()
     M.toggle({ start_dir = vim.fn.getcwd() })
   end, { desc = 'Vifm en el cwd de Neovim' })
+
+  vim.api.nvim_create_user_command('VifmReloadHL', function()
+    apply_hl()
+    vim.notify('Vifm highlights recargados', vim.log.levels.INFO)
+  end, { desc = 'Reaplicar VifmFloatBorder/VifmFloatNormal' })
 end
 
 return M
+

@@ -106,13 +106,13 @@ require('vifm-nvim').setup({
   small_lines = 30,
 
   -- Geometría del float
-  border_color = '#abb2bf',   -- gris claro (One Dark típico)
-  border_cterm = 7,           -- blanco (o 15 para blanco brillante)
   window = {
     width        = 1.0,       -- 100% del ancho
     height       = 0.46,      -- 50% del alto
     height_small = 1.0,      -- 75% en pantallas chicas
     bottom_gap   = 4,         -- líneas libres entre float y cmdline
+    border_color = '#faf8f6',   -- blanco pastes 
+    border_cterm = 7,           -- blanco (o 15 para blanco brillante)
     border       = 'rounded',
     style        = 'minimal',
   },
