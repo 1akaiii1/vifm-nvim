@@ -51,7 +51,6 @@ Opcional pero recomendado:
 }
 ```
 
-
 ### vim-plug
 
 ```lua
@@ -144,10 +143,10 @@ Cada valor numérico de geometría acepta:
 #### Aislado (por defecto)
 
 Config y datos viven en `base_dir`. No toca tu vifm del sistema.
-- `base_dir= ~/.local/share/nvim/vifm-nvim/cache/`
--           `~/.local/share/nvim/vifm-nvim/config/`
--           `~/.local/share/nvim/vifm-nvim/data/`
-                                    
+-`~/.local/share/nvim/vifm-nvim/cache/`
+-`~/.local/share/nvim/vifm-nvim/config/`
+-`~/.local/share/nvim/vifm-nvim/data/`
+                         
 ```lua
 require('vifm-nvim').setup()   -- vifmrc = nil
 ```
@@ -227,10 +226,10 @@ vim.api.nvim_set_hl(0, 'VifmFloatBorder', {
 ## 📐 Estructura del proyecto
 
 ```
-vifm-nvim/
-└── lua/
-    └── vifm-nvim/
-        └── init.lua
+    vifm-nvim/
+    └── lua/
+        └── vifm-nvim/
+            └── init.lua
 ```
 
 ---
