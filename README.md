@@ -8,6 +8,7 @@ Un float inferior, ancho completo, estilo fzf. Navegás con vifm.
 
 ## ✨ Características
 
+
 - 🪟 **Ventana flotante inferior** — ancho completo, altura proporcional, sin alterar el layout.
 - 🎨 **Aspecto coherente con fzf** — mismo borde, mismo fondo, sin franjas de color extrañas.
 - 🔀 **Cambio de `cwd` con un atajo** — `<Space>cd` dentro de vifm guarda el directorio actual.

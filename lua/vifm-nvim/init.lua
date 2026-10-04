@@ -9,8 +9,7 @@ local config = {
   small_cols  = 100,
   small_lines = 30,
 
-  -- Color del borde del float.
-  border_color = '#faf8f6',
+  border_color = '#c6d0f5',
   border_cterm = 7,
 
   window = {
@@ -20,7 +19,6 @@ local config = {
     bottom_gap   = 1,
     border       = 'rounded',
     style        = 'minimal',
-    -- border_color y border_cterm también se aceptan acá (ver setup)
   },
 }
 
@@ -112,8 +110,6 @@ local function apply_hl()
   })
 end
 
-M.reload_hl = apply_hl
-
 -- ─── API ────────────────────────────────────────────────────
 
 function M.close()
@@ -168,7 +164,6 @@ function M.toggle(opts)
     ensure_vifmrc()
   end
 
-  -- Reaplicar colores justo antes de abrir el float
   sync_bg()
   apply_hl()
 
@@ -213,10 +208,6 @@ function M.toggle(opts)
 
   vim.cmd('startinsert')
 
-  vim.api.nvim_buf_set_keymap(buf, 't', '<Esc>',
-    '<C-\\><C-n>:lua require("vifm-nvim").close()<CR>',
-    { noremap = true, silent = true })
-
   vim.api.nvim_create_autocmd('BufLeave', {
     buffer = buf, once = true,
     callback = function() vim.schedule(function() M.close() end) end,
@@ -233,36 +224,24 @@ function M.setup(opts)
   if opts.small_lines then config.small_lines = opts.small_lines end
   if opts.vifmrc ~= nil then config.vifmrc    = opts.vifmrc      end
 
-  -- Aceptar border_color / border_cterm en la raíz...
   if opts.border_color then config.border_color = opts.border_color end
   if opts.border_cterm then config.border_cterm = opts.border_cterm end
 
-  -- ...o dentro de window (más intuitivo junto a border)
   if opts.window then
     config.window = vim.tbl_deep_extend('force', config.window, opts.window)
     if opts.window.border_color then config.border_color = opts.window.border_color end
     if opts.window.border_cterm then config.border_cterm = opts.window.border_cterm end
   end
 
-  -- Aplicar ahora (por si no abrís el float todavía, quede listo)
   apply_hl()
 
-  -- Comandos de usuario
-  vim.api.nvim_create_user_command('VifmBuffer', function()
-    local f = vim.api.nvim_buf_get_name(0)
-    local d = f ~= '' and vim.fn.fnamemodify(f, ':p:h') or vim.fn.getcwd()
-    M.toggle({ start_dir = d })
-  end, { desc = 'Vifm en el dir del buffer' })
-
-  vim.api.nvim_create_user_command('VifmCwd', function()
-    M.toggle({ start_dir = vim.fn.getcwd() })
-  end, { desc = 'Vifm en el cwd de Neovim' })
-
-  vim.api.nvim_create_user_command('VifmReloadHL', function()
-    apply_hl()
-    vim.notify('Vifm highlights recargados', vim.log.levels.INFO)
-  end, { desc = 'Reaplicar VifmFloatBorder/VifmFloatNormal' })
+  -- Único punto de entrada. Sin keymaps, sin defaults globales.
+  -- El usuario decide cómo mapearlo:
+  --   vim.keymap.set('n', '<leader>fB', '<cmd>Vifm<cr>', { desc = 'Vifm' })
+  vim.api.nvim_create_user_command('Vifm', function(o)
+    local dir = o.args ~= '' and o.args or nil
+    M.toggle({ start_dir = dir })
+  end, { nargs = '?', complete = 'dir', desc = 'Vifm toggle' })
 end
 
 return M
-
