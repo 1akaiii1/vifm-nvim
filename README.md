@@ -70,7 +70,7 @@ require('vifm-nvim').setup({
 ```
 "------ VIFM Keymaps ------------
 " salir vifm
-nnoremap <C-e> :q 
+nnoremap <C-e> :q<cr>
 "cambiar cwd a directorio actual
 nnoremap <Space>cd :!echo -n %d:p > "$VIFM_CWD_FILE"<cr>
 
