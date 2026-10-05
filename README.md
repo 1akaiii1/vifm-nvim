@@ -65,6 +65,25 @@ require('vifm-nvim').setup({
 })
 
 ```
+### keymaps 
+
+```
+"------ VIFM Keymaps ------------
+" salir vifm
+nnoremap <C-e> :q 
+"cambiar cwd a directorio actual
+nnoremap <Space>cd :!echo -n %d:p > "$VIFM_CWD_FILE"<cr>
+
+-------- NEOVIM Keymaps ---------
+
+vim.keymap.set('n', '<C-A-e>', '<cmd>Vifm<cr>',
+  { desc = 'Vifm: dir del archivo' })
+
+vim.keymap.set('n', '<C-e>', function()
+  vim.cmd('Vifm ' .. vim.fn.fnameescape(vim.fn.getcwd()))
+end, { desc = 'Vifm (cwd)' })
+
+```
 
 ### Opciones
 
@@ -95,4 +114,4 @@ Config y datos viven en `base_dir`. No toca tu vifm del sistema.
 ## 🙏 Créditos
 
 - [vifm](https://vifm.info/) — el mejor file manager de terminal.
-- [fzf](https://github.com/junegunn/fzf) — inspiración para el estilo del float.
+- [fzf](https://github.com/june:gunn/fzf) — inspiración para el estilo del float.
