@@ -25,12 +25,20 @@ local config = {
 -- ─── Helpers ────────────────────────────────────────────────
 
 local function is_open()
-  return win and vim.api.nvim_win_is_valid(win)
+  return win ~= nil and vim.api.nvim_win_is_valid(win)
 end
 
 local function size(val, total)
   if type(val) ~= 'number' then return nil end
   return val <= 1 and math.floor(total * val) or math.floor(val)
+end
+
+-- Lee la primera línea no vacía de un archivo, o nil si no existe / está vacío
+local function read_line(path)
+  if not path or vim.fn.filereadable(path) ~= 1 then return nil end
+  local l = vim.fn.readfile(path)
+  if #l > 0 and l[1] ~= '' then return l[1] end
+  return nil
 end
 
 local function ensure_dirs()
@@ -97,17 +105,24 @@ end
 
 local function apply_hl()
   vim.api.nvim_set_hl(0, 'VifmFloatBorder', {
-    fg      = config.border_color,
-    ctermfg = config.border_cterm,
-    bg      = 'NONE',
-    ctermbg = 'NONE',
-    default = false,
+    fg = config.border_color, ctermfg = config.border_cterm,
+    bg = 'NONE', ctermbg = 'NONE', default = false,
   })
   vim.api.nvim_set_hl(0, 'VifmFloatNormal', {
     fg = 'NONE', ctermfg = 'NONE',
-    bg = 'NONE', ctermbg = 'NONE',
-    default = false,
+    bg = 'NONE', ctermbg = 'NONE', default = false,
   })
+end
+
+-- Diferida: sobrevive al redraw del terminal muerto y a :edit
+local function notify_cd(dir, ok)
+  vim.defer_fn(function()
+    if ok then
+      vim.notify('cd → ' .. dir, vim.log.levels.INFO, { title = 'vifm-nvim' })
+    else
+      vim.notify('No se pudo hacer cd a ' .. dir, vim.log.levels.WARN, { title = 'vifm-nvim' })
+    end
+  end, 150)
 end
 
 -- ─── API ────────────────────────────────────────────────────
@@ -116,36 +131,29 @@ function M.close()
   if not is_open() then return end
 
   local to_close = win
-  local file, new_cwd
   win, buf = nil, nil
 
-  if temp_file and vim.fn.filereadable(temp_file) == 1 then
-    local l = vim.fn.readfile(temp_file)
-    if #l > 0 and l[1] ~= '' then file = l[1] end
-    vim.fn.delete(temp_file)
-  end
-  temp_file = nil
+  local file    = read_line(temp_file)
+  local new_cwd = read_line(cwd_file)
 
-  if cwd_file and vim.fn.filereadable(cwd_file) == 1 then
-    new_cwd = vim.fn.readfile(cwd_file)[1]
-    vim.fn.delete(cwd_file)
-  end
-  cwd_file = nil
+  if temp_file then vim.fn.delete(temp_file); temp_file = nil end
+  if cwd_file  then vim.fn.delete(cwd_file);  cwd_file  = nil end
 
   if vim.api.nvim_win_is_valid(to_close) then
     pcall(vim.api.nvim_win_close, to_close, true)
   end
 
-  if new_cwd and new_cwd ~= '' and vim.fn.isdirectory(new_cwd) == 1 then
-    if pcall(vim.cmd, 'cd ' .. vim.fn.fnameescape(new_cwd)) then
-      vim.notify('cd → ' .. new_cwd, vim.log.levels.INFO, { title = 'vifm-nvim' })
-    else
-      vim.notify('No se pudo hacer cd a ' .. new_cwd, vim.log.levels.WARN, { title = 'vifm-nvim' })
-    end
+  local cd_ok = false
+  if new_cwd and vim.fn.isdirectory(new_cwd) == 1 then
+    cd_ok = pcall(vim.cmd, 'cd ' .. vim.fn.fnameescape(new_cwd))
   end
 
   if file then
-    vim.cmd('edit ' .. vim.fn.fnameescape(file))
+    pcall(vim.cmd, 'edit ' .. vim.fn.fnameescape(file))
+  end
+
+  if new_cwd then
+    notify_cd(new_cwd, cd_ok)
   end
 end
 
@@ -203,7 +211,11 @@ function M.toggle(opts)
 
   vim.fn.termopen({ 'vifm', '--choose-files', temp_file, start_dir }, {
     env = env,
-    on_exit = function() if is_open() then M.close() end end,
+    on_exit = function()
+      -- on_exit corre en fast context: diferimos siempre al main loop.
+      -- M.close() ya chequea is_open(), así que duplicados son no-op.
+      vim.schedule(function() M.close() end)
+    end,
   })
 
   vim.cmd('startinsert')
@@ -235,8 +247,7 @@ function M.setup(opts)
 
   apply_hl()
 
-  -- Único punto de entrada. Sin keymaps, sin defaults globales.
-  -- El usuario decide cómo mapearlo:
+  -- Único punto de entrada. El usuario decide cómo mapearlo:
   --   vim.keymap.set('n', '<leader>fB', '<cmd>Vifm<cr>', { desc = 'Vifm' })
   vim.api.nvim_create_user_command('Vifm', function(o)
     local dir = o.args ~= '' and o.args or nil
