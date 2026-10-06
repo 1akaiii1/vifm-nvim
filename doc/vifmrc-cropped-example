@@ -2,7 +2,7 @@
 "  VIFMRC — Configuración para vifm embebido en Neovim
 " ============================================================================
 source ~/.config/vifm/scripts/favicons.vifm
-colorscheme  draculac 
+colorscheme  Default 
 
 " ----------------------------------------------------------------------------
 "  EDITOR
@@ -57,8 +57,10 @@ nnoremap <Space> <Nop>
 
 " Navegación básica
 nnoremap s '
-nnoremap < /
-qnoremap < /
+nnoremap - /
+qnoremap - /
+nnoremap q :qall<cr>
+nnoremap <C-b> :qall<cr>
 nnoremap o :file<cr>
 nnoremap O :file &<cr>
 nnoremap cd :cd<space>
@@ -70,26 +72,23 @@ nnoremap gn :tabnew<cr>
 nnoremap gb :tabnew %f<cr>:tabprevious<cr>
 nnoremap gc :tabclose<cr>
 nnoremap <tab> :tabnext<cr>
-vnoremap <S-tab> :tabprevious<cr>
-vnoremap <tab> :tabnext<cr>
 nnoremap <S-tab> :tabprevious<cr>
 nnoremap g1 1gt
 nnoremap g2 2gt
 nnoremap g3 3gt
 nnoremap g4 4gt
 
-" Vim-like
 nnoremap t tj
 nnoremap . za
-nnoremap Z :sort<cr>
+nnoremap S :sort<cr>
 nnoremap zn :sort<cr>N
 nnoremap zm :sort<cr>m
 
 " Redimensionar paneles con Ctrl+Alt
-nnoremap <C-A-j> 10<c-w>>
-nnoremap <C-A-k> 10<c-w><
-nnoremap <C-A-l> 10<c-w>>
-nnoremap <C-A-h> 10<c-w><
+nnoremap <C-A-j> 3<c-w>>
+nnoremap <C-A-k> 3<c-w><
+nnoremap <C-A-l> 3<c-w>>
+nnoremap <C-A-h> 3<c-w><
 
 " Cambiar entre paneles
 qnoremap <space><space> <C-W><C-W>
@@ -119,13 +118,14 @@ nnoremap W :view<cr>
 vnoremap W :view<cr>gv
 nnoremap <c-u> <c-w>xq
 
-" Copiar al portapapeles (Wayland)
-nnoremap yn :!echo -n %c | wl-copy %i &&
-            \ echo -n %c | wl-copy -p %i<cr>
-nnoremap yd :!echo -n %d:p/ | wl-copy %i &&
-            \ echo -n %d:p/ | wl-copy -p %i<cr>
-nnoremap ya :!echo -n %c:p | wl-copy %i &&
-            \ echo -n %c:p | wl-copy -p %i<cr>
+
+" Copiar nombre de archivo al portapapeles (Wayland)
+nnoremap yn :!echo -n %c | wl-copy %i && echo -n %c | wl-copy -p %i<cr>:echo "Nombre copiado: " . expand('%c')<cr>
+" Copiar ruta al portapapeles (Wayland)
+nnoremap yd :!echo -n %d:p/ | wl-copy %i && echo -n %d:p/ | wl-copy -p %i<cr>:echo "Ruta copiada: " . expand('%d:p/')<cr>
+" Copiar ruta+nombre archivo al portapapeles (Wayland)
+nnoremap ya :!echo -n %c:p | wl-copy %i && echo -n %c:p | wl-copy -p %i<cr>:echo "Ruta completa copiada: " . expand('%c:p')<cr>
+
 
 " Guardar directorio actual y salir → Neovim hará :cd
 nnoremap <Space>cd :!echo -n %d:p > "$VIFM_CWD_FILE"<cr>
@@ -136,7 +136,7 @@ nnoremap A cw
 
 " Varios
 nnoremap <Space>a ggvG
-nnoremap <C-s> :shell<cr>
+"nnoremap <C-s> :shell<cr>
 nnoremap ,c :write | edit $MYVIFMRC | restart full<cr>
 nnoremap U :set wrap!<cr>
 
@@ -151,6 +151,18 @@ nnoremap <space>nf :New<space>
 " ----------------------------------------------------------------------------
 " Bat para complementar el preview del plugin cuando activás quickview
 fileviewer <text/*> bat --style=numbers --color=always --theme="Catppuccin Frappe" %c
+" ----------------------------------------------------------------------------
+"  FILE HANDLERS — Extracción según extensión
+" ----------------------------------------------------------------------------
+
+filetype *.zip,*.jar,*.war,*.ear,*.tar,*.tar.xz,*.tar.gz,*.tgz,*.tar.bz2,*.tbz2,*.rar,*.7z
+        \ {extract} aunpack %f,
+filetype *.zip,*.jar,*.war,*.ear {unzip} unzip %f,
+filetype *.tar.xz                {tar}   tar -xJvf %f,
+filetype *.tar.gz,*.tgz          {tar}   tar -xzf %f,
+filetype *.tar.bz2,*.tbz2        {tar}   tar -xjf %f,
+filetype *.rar                   {unrar} unrar x %f,
+filetype *.7z                    {7z}    7z x %f,
 
 " ----------------------------------------------------------------------------
 "  BOOKMARKS
@@ -162,6 +174,5 @@ mark n ~/.config/nvim/
 mark v ~/.config/vifm/
 mark l ~/.local/
 
+
 " vim: filetype=vifm :
-
-

@@ -125,6 +125,34 @@ local function notify_cd(dir, ok)
   end, 150)
 end
 
+local function build_vifm_argv(isolate, start_dir)
+  local argv = { 'env', '-u', 'VIFM', '-u', 'MYVIFMRC' }
+
+  if isolate then
+    vim.list_extend(argv, {
+      'VIFM='            .. config.base_dir .. '/config/vifm',
+      'XDG_CONFIG_HOME=' .. config.base_dir .. '/config',
+      'XDG_DATA_HOME='   .. config.base_dir .. '/data',
+      'XDG_CACHE_HOME='  .. config.base_dir .. '/cache',
+    })
+  else
+    -- No aislado: que vifm use la config real del usuario,
+    -- no la que pudo haber heredado del vifm padre.
+    vim.list_extend(argv, {
+      '-u', 'XDG_CONFIG_HOME',
+      '-u', 'XDG_DATA_HOME',
+      '-u', 'XDG_CACHE_HOME',
+    })
+  end
+
+  vim.list_extend(argv, {
+    'VIFM_CWD_FILE=' .. cwd_file,
+    'vifm', '--choose-files', temp_file, start_dir,
+  })
+
+  return argv
+end
+
 -- ─── API ────────────────────────────────────────────────────
 
 function M.close()
@@ -196,21 +224,7 @@ function M.toggle(opts)
     'FloatBorder:VifmFloatBorder,FloatTitle:VifmFloatBorder,' ..
     'NormalFloat:VifmFloatNormal,Normal:VifmFloatNormal'
 
-  local env
-  if isolate then
-    env = {
-      VIFM            = config.base_dir .. '/config/vifm',
-      XDG_CONFIG_HOME = config.base_dir .. '/config',
-      XDG_DATA_HOME   = config.base_dir .. '/data',
-      XDG_CACHE_HOME  = config.base_dir .. '/cache',
-      VIFM_CWD_FILE   = cwd_file,
-    }
-  else
-    env = { VIFM_CWD_FILE = cwd_file }
-  end
-
-  vim.fn.termopen({ 'vifm', '--choose-files', temp_file, start_dir }, {
-    env = env,
+  vim.fn.termopen(build_vifm_argv(isolate, start_dir), {
     on_exit = function()
       -- on_exit corre en fast context: diferimos siempre al main loop.
       -- M.close() ya chequea is_open(), así que duplicados son no-op.
@@ -247,8 +261,6 @@ function M.setup(opts)
 
   apply_hl()
 
-  -- Único punto de entrada. El usuario decide cómo mapearlo:
-  --   vim.keymap.set('n', '<leader>fB', '<cmd>Vifm<cr>', { desc = 'Vifm' })
   vim.api.nvim_create_user_command('Vifm', function(o)
     local dir = o.args ~= '' and o.args or nil
     M.toggle({ start_dir = dir })

@@ -70,17 +70,17 @@ require('vifm-nvim').setup({
 ```vim
 "------ VIFM Keymaps ------------
 " salir vifm
-nnoremap <C-e> :q<cr>
+nnoremap <C-b> :qall<cr>
 "cambiar cwd a directorio actual
 nnoremap <Space>cd :!echo -n %d:p > "$VIFM_CWD_FILE"<cr>
 ```
 ```lua
 -------- NEOVIM Keymaps ---------
 
-vim.keymap.set('n', '<C-A-e>', '<cmd>Vifm<cr>',
+vim.keymap.set('n', '<C-b>', '<cmd>Vifm<cr>',
   { desc = 'Vifm: dir del archivo' })
 
-vim.keymap.set('n', '<C-e>', function()
+vim.keymap.set('n', '<C-A-b>', function()
   vim.cmd('Vifm ' .. vim.fn.fnameescape(vim.fn.getcwd()))
 end, { desc = 'Vifm (cwd)' })
 
